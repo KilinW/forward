@@ -1,0 +1,13 @@
+[project]
+name = "forward"
+version = "0.1.0"
+description = "SSH port forward manager"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+forward = "forward.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
