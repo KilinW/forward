@@ -4,7 +4,7 @@ forward — SSH port forward manager
 Commands:
   forward list
   forward add <host> <port> [--tag TAG] [--local-port PORT]
-  forward remove <id|tag> [--keep]
+  forward remove <id|tag>
   forward completions install
 """
 
@@ -117,7 +117,7 @@ def cmd_add(
     print(f"  id:  {fwd.id[:8]}")
 
 
-def cmd_remove(state: StateManager, id_or_tag: str, keep: bool) -> None:
+def cmd_remove(state: StateManager, id_or_tag: str) -> None:
     forwards = state.load()
     matches = [
         f for f in forwards
@@ -134,9 +134,8 @@ def cmd_remove(state: StateManager, id_or_tag: str, keep: bool) -> None:
         sys.exit(1)
 
     fwd = matches[0]
-    if not keep:
-        kill_forward(fwd)
-        print(f"Killed pid {fwd.pid}.")
+    kill_forward(fwd)
+    print(f"Killed pid {fwd.pid}.")
     state.remove(fwd.id)
     label = fwd.tag or f"{fwd.host}:{fwd.remote_port}"
     print(f"Removed '{label}'.")
@@ -170,8 +169,6 @@ def main() -> None:
     rm_p = sub.add_parser("remove", help="Kill and remove a forward")
     rm_p.add_argument("id_or_tag", metavar="ID|TAG",
                       help="ID prefix or tag of the forward to remove")
-    rm_p.add_argument("--keep", action="store_true",
-                      help="Remove from list without killing the process")
 
     comp_p = sub.add_parser("completions", help="Shell completion helpers")
     comp_p.add_argument("action", choices=["install"], help="Install the completion script")
@@ -184,6 +181,6 @@ def main() -> None:
     elif args.command == "add":
         cmd_add(state, args.host, args.port, args.tag, args.local_port)
     elif args.command == "remove":
-        cmd_remove(state, args.id_or_tag, args.keep)
+        cmd_remove(state, args.id_or_tag)
     elif args.command == "completions":
         cmd_completions_install()

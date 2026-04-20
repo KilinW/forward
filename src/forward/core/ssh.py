@@ -87,9 +87,13 @@ def start_forward(
     with tempfile.TemporaryFile() as stderr_f:
         result = subprocess.run(
             [
-                "ssh", "-f", "-N",
-                "-o", "ExitOnForwardFailure=yes",
-                "-L", f"{port}:localhost:{remote_port}",
+                "ssh",
+                "-f",
+                "-N",
+                "-o",
+                "ExitOnForwardFailure=yes",
+                "-L",
+                f"{port}:localhost:{remote_port}",
                 host,
             ],
             stdout=subprocess.DEVNULL,
@@ -119,11 +123,10 @@ def start_forward(
 
 
 def kill_forward(fwd: Forward) -> None:
-    """Send SIGTERM to the tunnel process (by recorded PID and by lsof lookup)."""
-    for pid in {fwd.pid, find_ssh_pid(fwd.local_port)}:
-        if pid is None:
-            continue
-        try:
-            os.kill(pid, 15)
-        except ProcessLookupError:
-            pass
+    """Send SIGTERM to the tunnel process, only if its PID matches the recorded PID."""
+    if find_ssh_pid(fwd.local_port) != fwd.pid:
+        return
+    try:
+        os.kill(fwd.pid, 15)
+    except ProcessLookupError:
+        pass
